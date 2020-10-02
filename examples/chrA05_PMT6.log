@@ -1,0 +1,29 @@
+PLINK v1.90b4 64-bit (20 Mar 2017)
+Options in effect:
+  --allow-extra-chr
+  --bfile /public/home/WBXie/rape_seq/GATK_imputation_geno/geno_final/all_chr_random
+  --extract range /public/home/WBXie/rape_seq/GATK_imputation_geno/geno_final/myrange.txt
+  --make-bed
+  --out ./chrA05_PMT6
+
+Hostname: s002
+Working directory: /public/home/hzhao/script/POCKT/examples
+Start time: Thu Oct  1 16:38:28 2020
+
+Random number seed: 1601541508
+2063563 MB RAM detected; reserving 1031781 MB for main workspace.
+10620048 variants loaded from .bim file.
+505 people (0 males, 0 females, 505 ambiguous) loaded from .fam.
+Ambiguous sex IDs written to ./chrA05_PMT6.nosex .
+--extract range: 10613814 variants excluded.
+--extract range: 6234 variants remaining.
+Using 1 thread (no multithreaded calculations invoked).
+Before main variant filters, 505 founders and 0 nonfounders present.
+Calculating allele frequencies... done.
+Total genotyping rate is 0.97826.
+6234 variants and 505 people pass filters and QC.
+Note: No phenotypes present.
+--make-bed to ./chrA05_PMT6.bed + ./chrA05_PMT6.bim + ./chrA05_PMT6.fam ...
+done.
+
+End time: Thu Oct  1 16:38:36 2020
