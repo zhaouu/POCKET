@@ -8,16 +8,25 @@ We tested the code on linux platform.
 Requirements are:
 
 GCC C and C++ compiler (gcc, g++)
+
 Python >= 3.6
+
 pip3 for installing python packages
+
 Numpy
+
 Scipy
+
 scikit-learn
+
 limix
+
 pandas
+
 <a href = 'https://www.cog-genomics.org/plink2/'> plink software</a>
 
 # Installation
+
 If all the requirements are met, you can install the POCKT library with the command:
 
 python3 setup.py build install --user
@@ -25,7 +34,6 @@ python3 setup.py build install --user
 or using
 
 pip install pockt
-
 
 # Examples
 
