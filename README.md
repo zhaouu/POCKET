@@ -11,7 +11,7 @@ GCC C and C++ compiler (gcc, g++)
 
 Python >= 3.6
 
-pip3 for installing python packages
+pip for installing python packages
 
 Numpy
 
@@ -38,3 +38,6 @@ pip install pockt
 # Examples
 
 You can fllow <a href='./examples/POCKT_example.ipynb'> the example </a> to use the POCKT.
+
+# Cite
+Shan et al., Genome- and transcriptome-wide association studies provide insights into the genetic basis of natural variation of seed oil content in Brassica napus. <i>Molecular Plant</i>, in review.
