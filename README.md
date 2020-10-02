@@ -25,6 +25,8 @@ limix
 
 pandas
 
+Joblib
+
 <a href = 'https://www.cog-genomics.org/plink2/'> plink software</a>
 
 # Installation
