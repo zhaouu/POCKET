@@ -42,4 +42,4 @@ pip install pockt
 You can fllow <a href='./examples/POCKT_example.ipynb'> the example </a> to use the POCKT.
 
 # Cite
-Shan et al., Genome- and transcriptome-wide association studies provide insights into the genetic basis of natural variation of seed oil content in Brassica napus. <i>Molecular Plant</i>, in review.
+Tang et al., Genome- and transcriptome-wide association studies provide insights into the genetic basis of natural variation of seed oil content in Brassica napus. <i>Molecular Plant</i>, in review.
