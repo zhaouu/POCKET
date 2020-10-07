@@ -1,3 +1,0 @@
-##python
-def test():
-    return
