@@ -31,7 +31,7 @@ Joblib
 
 # Installation
 
-If all the requirements are met, you can install the POCKT library with the command:
+If all the requirements are met, you can install the POCKET library with the command:
 
 python3 setup.py build install --user
 
