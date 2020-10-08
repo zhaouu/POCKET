@@ -37,7 +37,7 @@ python3 setup.py build install --user
 
 or using
 
-pip install pockt
+pip install gene_pocket
 
 # Examples
 
