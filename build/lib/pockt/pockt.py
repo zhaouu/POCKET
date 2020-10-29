@@ -6,13 +6,13 @@ import ipdb
 from pandas_plink import read_plink
 #from genes_function_svm import gene_function_svm
 from imp import reload
-from pocket.genes_function_svm import gene_function_svm
-from pocket.eqtl import limix_gwas
+from .genes_function_svm import gene_function_svm
+from .eqtl import limix_gwas
 from os.path import expanduser
-class pocket():
+class pockt():
     """
     """
-    def __init__(self, leadSNP, chrom, region_start, region_end, gwas_res, pheno, bed_f, gene_annotation_df, vars_annotation_df, kinship, positive_sets_dict, feature_df, expression_df_dict=None, twas_df_dict=None, repeat_time=10, n_jobs=10, save_path = None, save_details = False):
+    def __init__(self, leadSNP, chrom, region_start, region_end, gwas_res, pheno, bed_f, gene_annotation_df, vars_annotation_df, kinship, positive_sets_dict, feature_df, expression_df_dict=None, twas_df_dict=None, repeat_time=10, n_jobs=10):
         self.leadSNP = leadSNP
         self.chrom = chrom
         self.region_start = region_start
@@ -42,8 +42,7 @@ class pocket():
         self.ld_res = None
         self.gene_effect_res = None
         self.gf_score = None
-        self.save_path = save_path
-        self.save_details = save_details
+
 
 
     def make_geno_df_region(self, chrom, start, end):
@@ -100,8 +99,6 @@ class pocket():
         effect_anno = self.vars_anno
         i = (effect_anno.Annotation == 'upstream_gene_variant')|(effect_anno.Annotation == 'intragenic_variant')| (effect_anno.Annotation == 'intergenic_region')|(effect_anno.Annotation == 'downstream_gene_variant')|(effect_anno.Annotation == 'intron_variant')|(effect_anno.Annotation == 'N') ##remove non cds variant
         effect_anno = effect_anno[~i]
-        if 'Imapct' in effect_anno.columns:
-            effect_anno.loc[:,'Impact'] = effect_anno.Imapct
         if region_geno is None:
             self.make_geno_df_region(self.chrom, self.region_start, self.region_end)
             region_geno = self.region_snp_info_df
@@ -109,7 +106,7 @@ class pocket():
         geno_used.index = region_geno.rsid
         effect_anno =  effect_anno[effect_anno.index.isin(geno_used.index)]
         snps = [set(g.loc[['Ref_geno','Alt_geno']]) == set(geno_used.loc[i, ['a0','a1']]) for i,g in effect_anno.iterrows()]
-        effect_anno = effect_anno.loc[snps,:]
+        effect_anno = effect_anno[snps]
         if ld_res is None:
             self.ld_caculation()
             ld_res = self.ld_res
@@ -128,14 +125,12 @@ class pocket():
             score_list = []
             g_list = []
             for g, res in anno_res.groupby('Gene'):
-                score = max([x.scaled_p*effect_w_dict[x.Impact.lower()] for i,x in res.iterrows()])
+                score = max([x.scaled_p*effect_w_dict[x.Imapct.lower()] for i,x in res.iterrows()])
                 score_list.append(score)
                 g_list.append(g)
             gene_effect_res = pd.Series(score_list,index=g_list)
             gene_effect_res = (gene_effect_res - min(gene_effect_res))/(max(gene_effect_res) - min(gene_effect_res))
         self.gene_effect_res = gene_effect_res
-        if self.save_details and (self.save_path is not None):
-            anno_res.to_csv('{}/{}_{}_{}_{}_{}.csv'.format(self.save_path, self.leadSNP, self.chrom, self.region_start, self.region_end, 'high_effect_vars_res') )
 
     def gf_caculation(self):
         prob_list = []
@@ -143,23 +138,15 @@ class pocket():
         n_jobs = self.n_jobs
         feature_df = self.feature_df
         positive_sets_dict = self.positive_sets_dict
-        r2_list = []
         for k, posi_genes in positive_sets_dict.items():
             feature_df_used = feature_df.loc[:,~feature_df.columns.str.lower().str.contains(k)]
             svm_res = gene_function_svm(feature_df_used, posi_genes, repeat_time, n_jobs)
             svm_res.mutiple_svm(self.region_genes)
             c, prob, score = svm_res.cat_res, svm_res.prob_res, svm_res.r2_list
             prob_list.append(prob)
-            r2_list.append(score)
         prob_df = pd.DataFrame(prob_list, index = positive_sets_dict.keys()).T
         mean_score = prob_df.mean(axis=1)
         self.gf_score = mean_score
-        if self.save_details and (self.save_path is not None):
-            prob_df.loc['R2',:] = r2_list
-            prob_df.loc[:,'Mean_socre'] = prob_df.mean(axis=1)
-            prob_df = prob_df.sort_values(['Mean_socre'], ascending=False)
-            prob_df.to_csv('{}/{}_{}_{}_{}_{}.csv'.format(self.save_path, self.leadSNP, self.chrom, self.region_start, self.region_end, 'gene_function_predicted_SVM_score') )
-
 
     def topN_eQTL_asso(self, geno_mat, gene_express, snp_info_df):
         res = limix_gwas(geno_mat, gene_express, snp_info_df, kinship=self.kinship)
@@ -207,18 +194,13 @@ class pocket():
                 twas_eqtl_res = pd.merge(twas_res_dict[k], eqtl_res, on='Gene', how='inner')
                 twas_eqtl_res.loc[:,'twas_p'] = -np.log10(twas_eqtl_res.lmm_p)
                 twas_eqtl_res.loc[:,'eqtl_p'] = -np.log10(twas_eqtl_res.pv20)
-                if self.save_details and (self.save_path is not None):
-                    twas_eqtl_res.loc[:,['Gene', 'twas_p', 'eqtl_p']].to_csv('{}/{}_{}_{}_{}_{}_expression_effect_res.csv'.format(self.save_path, self.leadSNP,self.chrom, self.region_start, self.region_end, k) )
                 region_genes = twas_eqtl_res.Gene
                 twas_eqtl_res = twas_eqtl_res.loc[:,'twas_p']*twas_eqtl_res.loc[:,'eqtl_p']
                 twas_eqtl_res.index = region_genes
                 twas_eqtl_res_df.loc[:,k] = twas_eqtl_res
                 twas_eqtl_res.index = region_genes
             else:
-                eqtl_res.loc[:,'eqtl_p'] = -np.log10(eqtl_res.pv20)
-                if self.save_details and (self.save_path is not None):
-                    eqtl_res.loc[:,'eqtl_p'].to_csv('{}/{}_{}_{}_{}_{}_expression_effect_res.csv'.format(self.save_path, self.leadSNP,self.chrom, self.region_start, self.region_end, k))
-                twas_eqtl_res = eqtl_res.loc[:,'eqtl_p']
+                twas_eqtl_res = -np.log10(eqtl_res.pv20)
             twas_eqtl_res_df.loc[:,k] = twas_eqtl_res
         twas_eqtl_res_df = twas_eqtl_res_df.fillna(0)
         if combine == 'max':
@@ -260,7 +242,7 @@ class pocket():
             if len(used_h) >1:
                 h = np.array(cutree.loc[:,i]).astype('float')
                 #ipdb.sset_trace()
-                h[~np.isin(h, used_h)] = np.nan
+                h[~np.isin(h, used_h)[0]] = np.nan
                 hap_list.append(h)
                 i_list.append(i)
             else:
@@ -299,23 +281,20 @@ class pocket():
         else:
             geno_df = region_geno
         position_list = self.make_gene_hap_pos(promoter_len = promoter_len)
-        ##pos = position_list[0]
-        ##p_list = []
-        ##for gene, pos in zip(self.anno_df.gene, position_list):
-        ##    print(gene)
-        ##    p_list.append(self.make_gene_hap_df(geno_df, pos[0], pos[1], n_clusters= n_clusters))
+        #pos = position_list[0]
+        #p_list = []
+        #for gene, pos in zip(self.anno_df.gene, position_list):
+        #    print(gene)
+        #    p_list.append(self.make_gene_hap_df(geno_df, pos[0], pos[1], n_clusters= n_clusters))
 
-        ##xx = self.make_gene_hap_df(geno_df, pos[0], pos[1], n_clusters= n_clusters)
+        #xx = self.make_gene_hap_df(geno_df, pos[0], pos[1], n_clusters= n_clusters)
         #ipdb.sset_trace()
-        #return [geno_df, position_list]
         p_list = Parallel(n_jobs= n_job)(delayed(self.make_gene_hap_df)(geno_df, pos[0], pos[1], n_clusters= n_clusters) for pos in position_list)
         hap_p = pd.Series(p_list, index = self.anno_df.gene)
-        if self.save_details and (self.save_path is not None):
-            hap_p.sort_values().to_csv('{}/{}_{}_{}_{}_hap_association_res.csv'.format(self.save_path, self.leadSNP, self.chrom, self.region_start, self.region_end))
         self.hap_res = (-np.log10(hap_p) - min(-np.log10(hap_p)))/(max(-np.log10(hap_p))- min(-np.log10(hap_p)))
 
 
-    def pocket_summary(self):
+    def pockt_summary(self, save_path = None):
         res_df = pd.DataFrame()
         res_df.loc[:,"Gene"] = self.anno_df.gene
         res_df.loc[:,'symbol'] = self.anno_df.loc[:,'symbol']
@@ -332,8 +311,7 @@ class pocket():
         res_df.loc[:,'expression_effect'] = self.expression_effect
         res_df.loc[:,'haplotype_effect'] = self.hap_res
         res_df.loc[:,'gene_function'] = self.gf_score
-        res_df.loc[:,'variation_effect'] = res_df.loc[:,'variation_effect'].fillna(0)
-        if self.expression_effect is None:
+        if res_df.expression_effect is None:
             res = res_df.gene_function*(res_df.variation_effect  + 2*res_df.haplotype_effect)
         else:
             res = res_df.gene_function*(res_df.variation_effect + res_df.expression_effect + 2*res_df.haplotype_effect)
@@ -342,8 +320,8 @@ class pocket():
         res_df.loc[:,'Description'] = self.anno_df.loc[:,'description']
         res_df.loc[:,'Description'] = ['' if pd.isnull(x) else x.split('[')[0] for x in res_df.loc[:,'Description']]
         self.summary_score = res_df
-        if self.save_path is not None:
-            res_df.to_csv('{0}/{1}_{2}_{3}_{4}_gene_prori_res.csv'.format(self.save_path, self.leadSNP, self.chrom, self.region_start, self.region_end))
+        if save_path is not None:
+            res_df.to_csv('{0}/{1}_{2}_{3}_{4}_gene_prori_res.csv'.format(save_path, self.leadSNP, self.chrom, self.region_start, self.region_end))
 
 
 

@@ -1,7 +1,6 @@
 import os
 import numpy as np
 import pandas as pd
-import limix
 class limix_gwas():
     def __init__(self, geno_matrix, pheno_list, snp_info_df, kinship=None):
         self.geno_matrix = geno_matrix

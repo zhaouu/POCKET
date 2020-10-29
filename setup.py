@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name = 'Gene_POCKET',
-    version = '0.0.1',
+    version = '0.0.4',
     keywords='candidate genes prioritization',
     description = 'a library for prioritizing the candidate genes by incorporating information of Knowledge-based gene sets, Effects of variants, GWAS and TWAS',
     license = 'MIT License',
