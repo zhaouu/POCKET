@@ -44,4 +44,4 @@ pip install gene_pocket
 You can follow <a href='./examples/POCKET_example.ipynb'> the example </a> to use the POCKET.
 
 # Cite
-ang, S., Zhao, H., Lu, S., Yu, L., Zhang, G., Zhang, Y., . . . Guo, L. Genome- and transcriptome-wide association studies provide insights into the genetic basis of natural variation of seed oil content in Brassica napus. Molecular Plant. doi:10.1016/j.molp.2020.12.003
+Tang, S., Zhao, H., Lu, S., Yu, L., Zhang, G., Zhang, Y., . . . Guo, L. Genome- and transcriptome-wide association studies provide insights into the genetic basis of natural variation of seed oil content in Brassica napus. Molecular Plant. doi:10.1016/j.molp.2020.12.003
